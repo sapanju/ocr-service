@@ -11,7 +11,7 @@ celery = Celery('celeryApp')
 celery.conf.update(BROKER_URL=os.environ['REDIS_URL'],
                    CELERY_RESULT_BACKEND=os.environ['REDIS_URL'])
 
-@celery.task()
+@celery.task
 def perform_ocr(data):
     image_url = data['image_url']
     filename = image_url.split('/')[-1] + '.png'
