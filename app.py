@@ -3,6 +3,9 @@ import tasks
 
 app = Flask(__name__)
 
+def get_app():
+    return app
+
 @app.route('/', methods=['GET'])
 def hello():
     return 'Server is up.'
