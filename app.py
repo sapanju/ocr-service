@@ -1,12 +1,5 @@
 from flask import Flask, request, url_for, jsonify
-import urllib.request
-
-try:
-    import Image
-except ImportError:
-    from PIL import Image
-import pytesseract
-
+import tasks
 
 app = Flask(__name__)
 
@@ -17,11 +10,6 @@ def hello():
 @app.route('/ocr', methods=['POST'])
 def do_ocr():
     data = request.get_json()
-    image_url = data['image_url']
-    filename = image_url.split('/')[-1] + '.png'
-
-    urllib.request.urlretrieve(image_url, filename)
-
-    print('Performing OCR for image ' + filename)
-
-    return pytesseract.image_to_string(Image.open(filename))
+    task = tasks.perform_ocr.delay(data)
+    result = task.wait()
+    return result
