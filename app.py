@@ -15,7 +15,7 @@ def auth_required(f):
         if auth and auth.password == password:
             return f()
 
-        return 'Failed to authenticate'
+        return 'Failed to authenticate', 401, {}
 
     return decorated
 
