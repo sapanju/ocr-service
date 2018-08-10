@@ -15,7 +15,7 @@ def auth_required(f):
         if auth and auth.password == password:
             return f()
 
-        return {'Failed to authorize your credentials', 401, jsonify({})}
+        return 'Failed to authenticate'
 
     return decorated
 
