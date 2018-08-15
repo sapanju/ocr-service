@@ -32,7 +32,7 @@ def perform_ocr(data):
     image_buffer = data['image_buffer']
     image = io.BytesIO(image_buffer)
 
-    filename = data['filename'];
+    filename = data['filename']
     print('Performing OCR for ' + filename)
    
     start_time = time.time()
@@ -42,7 +42,10 @@ def perform_ocr(data):
     total_time = end_time - start_time
     print('Finished OCR in ' + str(round(total_time, 4)) + 's')
 
-    return result
+    return {
+        'status': 'Task completed.',
+        'result': result
+    }
 
 
 
