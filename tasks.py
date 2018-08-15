@@ -1,7 +1,7 @@
 from celery import Celery
 import urllib.request
 import time
-import cStringIO
+import io
 import os
 try:
     import Image
@@ -30,7 +30,7 @@ celery.Task = ContextTask
 @celery.task
 def perform_ocr(data):
     image_buffer = data['image_buffer']
-    image = cStringIO.StringIO(image_buffer)
+    image = io.BytesIO(image_buffer)
 
     filename = data['filename'];
     print('Performing OCR for ' + filename)
