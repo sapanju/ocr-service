@@ -1,6 +1,7 @@
 from celery import Celery
 import urllib.request
 import time
+import cStringIO
 import os
 try:
     import Image
@@ -28,15 +29,14 @@ celery.Task = ContextTask
 
 @celery.task
 def perform_ocr(data):
-    image_url = data['image_url']
-    filename = image_url.split('/')[-1] + '.png'
+    image_buffer = data['image_buffer']
+    image = cStringIO.StringIO(image_buffer)
 
-    urllib.request.urlretrieve(image_url, filename)
-
+    filename = data['filename'];
     print('Performing OCR for ' + filename)
    
     start_time = time.time()
-    result = pytesseract.image_to_string(Image.open(filename))
+    result = pytesseract.image_to_string(Image.open(image))
     end_time = time.time()
 
     total_time = end_time - start_time

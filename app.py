@@ -25,7 +25,6 @@ def get_app():
 
 
 @app.route('/', methods=['GET'])
-@auth_required
 def hello():
     return 'Server is up.'
 
