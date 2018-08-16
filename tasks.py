@@ -3,6 +3,7 @@ import urllib.request
 import time
 import os
 import base64
+import tempfile
 try:
     import Image
 except ImportError:
@@ -37,10 +38,10 @@ def perform_ocr(data):
 
     buffer_string = urllib.parse.unquote(image_buffer)  # decode URI component to base64 string
     buffer_bytes = buffer_string.encode()  # encode to bytes
-    with open(filename, 'wb') as fh:
-        fh.write(base64.decodebytes(buffer_bytes))
-
-    result = pytesseract.image_to_string(Image.open(filename))
+    with tempfile.NamedTemporaryFile(suffix='.png') as image_file:
+        image_file.write(base64.decodebytes(buffer_bytes))
+        image_file.flush()
+        result = pytesseract.image_to_string(Image.open(image_file.name))
 
     end_time = time.time()
 
