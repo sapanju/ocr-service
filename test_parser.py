@@ -1,8 +1,8 @@
 import json
 import requests
 
-# url = 'https://ocr-processor.herokuapp.com/'
-url = 'http://localhost:5000'
+url = 'https://ocr-processor.herokuapp.com'
+# url = 'http://localhost:5000'
 data = {
   'filename': 'test_blood_work',
 }
