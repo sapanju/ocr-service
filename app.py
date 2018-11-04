@@ -37,6 +37,11 @@ def do_ocr():
     task = tasks.perform_ocr.delay(data)
     return jsonify({}), 202, {'Location': url_for('task_status', task_id=task.id)}
 
+@app.route('/ocr_pdf', methods=['POST'])
+def do_ocr_pdf():
+    data = request.get_json()
+    task = tasks.pdf_to_string.delay(data)
+    return jsonify({}), 202, {'Location': url_for('task_status', task_id=task.id)}
 
 @app.route('/status/<task_id>')
 def task_status(task_id):

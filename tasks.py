@@ -4,6 +4,8 @@ import time
 import os
 import base64
 import tempfile
+from pdf2image import convert_from_path
+
 try:
     import Image
 except ImportError:
@@ -42,6 +44,29 @@ def perform_ocr(data):
         image_file.write(base64.decodebytes(buffer_bytes))
         image_file.flush()
         result = pytesseract.image_to_string(Image.open(image_file.name))
+
+    end_time = time.time()
+
+    total_time = end_time - start_time
+    print('Finished OCR in ' + str(round(total_time, 4)) + 's')
+
+    return {
+        'status': 'Task completed.',
+        'result': result
+    }
+
+@celery.task
+def pdf_to_string(data):
+    filename = data['filename']
+
+    print('Performing OCR for ' + filename)
+    start_time = time.time()
+
+    pages = convert_from_path(filename + '.pdf', 500)
+    for page in pages:
+        page.save(filename + '.png', 'PNG')
+
+    result = pytesseract.image_to_string(Image.open(filename + '.png'))
 
     end_time = time.time()
 
