@@ -3,10 +3,6 @@ import requests
 import time
 import re
 
-OCR_URL = 'https://ocr-processor.herokuapp.com'
-data = {
-  'filename': 'test_blood_work',
-}
 
 def parse_haematopathology_results(rows):
     # Sample row: * MCHC 32.8 310—355 g/L
@@ -40,6 +36,16 @@ def parse_haematopathology_results(rows):
     return records
 
 
+OCR_URL = 'https://ocr-processor.herokuapp.com'
+
+OPERATIONS_DICT = {
+    'Haematopathology': parse_haematopathology_results
+}
+
+TEMPLATE_REGEXES = {
+    'Haematopathology': r'(test\s+name)\s+(resu.ts)\s+(f.ag\s+reference)\s+(un.ts)'
+}
+
 def main():
     # Connect to server, wake up dyno
     test_request = requests.get(OCR_URL)
@@ -47,6 +53,10 @@ def main():
         print('Can\'t connect to OCR service. Exiting...')
 
     print('Connected to OCR service.')
+
+    data = {
+        'filename': 'test_blood_work',
+    }
 
     request = requests.post(OCR_URL + '/ocr_pdf', json=data)
     print('Performing OCR for ' + data['filename'])
@@ -66,17 +76,12 @@ def main():
     result = response['result']
     result_rows = result.split('\n')
 
-    # Template regex
-    template_regexes = {
-        'Haematopathology': r'(test\s+name)\s+(resu.ts)\s+(f.ag\s+reference)\s+(un.ts)'
-    }
-
-    templates = list(template_regexes.keys())
+    templates = list(TEMPLATE_REGEXES.keys())
     index = 0
     found_template = False
     while not found_template:
         template = templates[index]
-        regex = template_regexes.get(template)
+        regex = TEMPLATE_REGEXES.get(template)
         for row in result_rows:
             if re.match(regex, row, re.I):
                 print(template + ' results record detected.')
@@ -92,12 +97,11 @@ def main():
 
     detected_template = templates[index]
 
-    if detected_template == 'Haematopathology':
-        records = parse_haematopathology_results(result_rows)
+    records = OPERATIONS_DICT[detected_template](result_rows)
 
-        print('Found ' + str(len(records)) + ' records:')
-        for record in records:
-            print(record)
+    print('Found ' + str(len(records)) + ' records:')
+    for record in records:
+        print(record)
 
     return
 
