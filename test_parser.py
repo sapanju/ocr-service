@@ -4,6 +4,48 @@ import time
 import re
 
 
+class HaematopathologyTemplate:
+    def __init__(self):
+        # Sample row: * MCHC 32.8 310—355 g/L
+        self.typical_result_regex = r'^\*\s+([\w+\s?—?]*)\s+(\d*\.?\d*)\s+([^\s]+)\s+(.*$)'
+
+        # Sample row: * EOSINOPHIL 0.02 L 0.09—0.90 X 10*9/L
+        self.low_result_regex = r'^\*\s+([\w+\s?—?]*)\s+(\d*\.?\d*)\s+l\s+([^\s]+)\s+(.*$)'
+
+    def parse_rows(self, rows):
+        records = []
+        # Only parse rows beginning with a bullet point
+        for row in rows:
+            match = re.match(self.low_result_regex, row, re.I) or re.match(self.typical_result_regex, row, re.I)
+
+            if not match:
+                continue
+
+            groups = match.groups()
+
+            record = {
+                'test_name': groups[0],
+                'result': groups[1],
+                'flag_reference': groups[2],
+                'units': groups[3]
+            }
+
+            if re.match(self.low_result_regex, row, re.I):
+                record['low'] = True
+
+            records.append(record)
+
+        return records
+
+
+class TemplateFactory:
+    def __init__(self):
+        self.TEMPLATES = {'Haematopathology': HaematopathologyTemplate}
+
+    def get_template_parser(self, template_name):
+        return self.TEMPLATES[template_name]
+
+
 def parse_haematopathology_results(rows):
     # Sample row: * MCHC 32.8 310—355 g/L
     typical_result_regex = r'^\*\s+([\w+\s?—?]*)\s+(\d*\.?\d*)\s+([^\s]+)\s+(.*$)'
@@ -37,10 +79,6 @@ def parse_haematopathology_results(rows):
 
 
 OCR_URL = 'https://ocr-processor.herokuapp.com'
-
-OPERATIONS_DICT = {
-    'Haematopathology': parse_haematopathology_results
-}
 
 TEMPLATE_REGEXES = {
     'Haematopathology': r'(test\s+name)\s+(resu.ts)\s+(f.ag\s+reference)\s+(un.ts)'
@@ -97,7 +135,9 @@ def main():
 
     detected_template = templates[index]
 
-    records = OPERATIONS_DICT[detected_template](result_rows)
+    parser = TemplateFactory().get_template_parser(detected_template)()
+
+    records = parser.parse_rows(result_rows)
 
     print('Found ' + str(len(records)) + ' records:')
     for record in records:
@@ -114,7 +154,7 @@ def get_result(r):
 
     while status == 'PENDING':
         print('Pending result...')
-        time.sleep(2)
+        time.sleep(5)
         response = requests.get(ping_url).json()
         status = response['state']
 
