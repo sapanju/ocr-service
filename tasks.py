@@ -56,7 +56,7 @@ def perform_ocr(data):
     }
 
 @celery.task
-def pdf_to_string(data):
+def perform_ocr_for_pdf(data):
     filename = data['filename']
 
     print('Performing OCR for ' + filename)

@@ -40,7 +40,7 @@ def do_ocr():
 @app.route('/ocr_pdf', methods=['POST'])
 def do_ocr_pdf():
     data = request.get_json()
-    task = tasks.pdf_to_string.delay(data)
+    task = tasks.perform_ocr_for_pdf.delay(data)
     return jsonify({}), 202, {'Location': url_for('task_status', task_id=task.id)}
 
 @app.route('/status/<task_id>')
