@@ -102,7 +102,7 @@ venv.bak/
 
 # mypy
 .mypy_cache/
-.idea/workspace.xml
+.idea/*.xml
 
 #images
 *.png
