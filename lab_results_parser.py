@@ -79,15 +79,29 @@ def perform_ocr_for_pdf(filename):
     return result
 
 
+def parse(filename, detected_template):
+    result = perform_ocr_for_pdf(filename)
+    result_rows = result.split('\n')
+    parser = TemplateFactory().get_template_parser(detected_template)()
+    return parser.parse_rows(result_rows)
+
+
 OCR_URL = 'https://ocr-processor.herokuapp.com'
 
 TEMPLATE_REGEXES = {
     'Haematopathology': r'(test\s+name)\s+(resu.ts)\s+(f.ag\s+reference)\s+(un.ts)'
 }
 
+
+def add_golden(filename, records):
+    golden_file = open('expected_results/' + filename + '.txt', 'w+')
+    golden_file.write(str(records))
+    golden_file.close()
+
+
 def main():
     data = {
-        'filename': 'test_blood_work',
+        'filename': '/record_input/test_blood_work',
     }
 
     filename = data['filename']
@@ -124,7 +138,7 @@ def main():
     for record in records:
         print(record)
 
-    return
+    return records
 
 
-main()
+# main()
